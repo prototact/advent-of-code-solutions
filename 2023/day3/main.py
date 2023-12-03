@@ -1,4 +1,4 @@
-from collections.abc import Generator, Iterator
+from collections.abc import Generator, Iterator, Callable
 from itertools import count, chain
 from dataclasses import dataclass
 from math import prod
@@ -28,38 +28,33 @@ class Image:
 def get_surrounding_numbers(idx: int, jdx: int, image: Image, visited: set[tuple[int, int]]) -> Generator[tuple[int, int], None, None]:
     for step in DIRECTIONS:  
         dx, dy = step 
+        coords = (idx + dx, jdx + dy)
         try:
-            char = image[idx + dx, jdx + dy]
+            char = image[coords]
         except IndexError:
             continue
-        if char.isdigit() and (idx + dx, jdx + dy) not in visited:
-            yield (idx + dx, jdx + dy)
-            visited.add((idx + dx, jdx + dy))
+        if char.isdigit() and coords not in visited:
+            yield coords
+            visited.add(coords)
 
 
 def expand_left_and_right(coords: tuple[int, int], image: Image, visited: set[tuple[int, int]]) -> int:
     idx, jdx = coords
     total = image[idx, jdx]
-    for left in count(-1, -1):
-        try:
-            char = image[idx, jdx + left]
-        except IndexError:
-            break
-        if char.isdigit():
-            total = char + total
-            visited.add((idx, jdx + left))
-        else:
-            break
-    for right in count(1, 1):
-        try:
-            char = image[idx, jdx + right]
-        except IndexError:
-            break
-        if char.isdigit():
-            total = total + char
-            visited.add((idx, jdx + right))
-        else:
-            break
+    def expand(total: str, dir_: Iterator[int], combine: Callable[[str, str], str]):
+        for step in dir_:
+            try:
+                char = image[idx, jdx + step]
+            except IndexError:
+                break
+            if char.isdigit():
+                total = combine(char, total)
+                visited.add((idx, jdx + step))
+            else:
+                break
+        return total
+    total = expand(total, count(-1, -1), lambda x, y: x + y)
+    total = expand(total, count(1, 1), lambda x, y: y + x)
     return int(total)
 
 
@@ -88,9 +83,13 @@ def take_product(numbers: list[int]) -> int:
 def scan_image_for_gears(image: Image) -> list[int]:
     visited: set[tuple[int, int]] = set()
     return list(
-        take_product([expand_left_and_right(coords, image, visited)
-             for coords in get_surrounding_numbers(idx, jdx, image, visited)
-             if coords not in visited])
+        take_product(
+            [
+                expand_left_and_right(coords, image, visited)
+                for coords in get_surrounding_numbers(idx, jdx, image, visited)
+                if coords not in visited
+            ]
+        )
         for idx, row in enumerate(image)
         for jdx, char in enumerate(row)
         if char == '*'
