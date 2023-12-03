@@ -32,7 +32,7 @@ class Image:
         Registers the coordinates to the visited ones. This is so that the same number is not returned twice.
         Check the lifetime of the visisted set in your code for correctness.
         """
-        for step in DIRECTIONS:  
+        for step in DIRECTIONS:
             dx, dy = step 
             coords = (idx + dx, jdx + dy)
             try:
@@ -68,7 +68,6 @@ class Image:
         total = expand(total, count(1, 1), lambda x, y: y + x)
         return int(total)
 
-
     def scan(self) -> list[int]:
         visited: set[tuple[int, int]] = set()
         return list(
@@ -101,7 +100,7 @@ if __name__ == "__main__":
         image = Image([line.strip() for line in file.readlines()])
     numbers = image.scan()
     assert (result := sum(numbers)) == 4361, result
-    
+
     gear_ratios = image.scan_for_gears()
     assert sum(gear_ratios) == 467835
 
