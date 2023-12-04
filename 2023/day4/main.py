@@ -80,12 +80,12 @@ def proliferate_iterative(cards: list[ScoredCard]) -> int:
     return acc
 
 
-def filterOptional[A](iterable: Iterable[A | None]) -> list[A]:
+def filter_missing[A](iterable: Iterable[A | None]) -> list[A]:
     return [value for value in iterable if value is not None]
 
 
 def parse_cards(lines: list[str]) -> list[Card]:
-    return filterOptional(Card.parse_card(line.strip()) for line in lines)
+    return filter_missing(Card.parse_card(line.strip()) for line in lines)
 
 
 if __name__ == "__main__":
