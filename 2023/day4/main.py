@@ -74,7 +74,7 @@ def proliferate_iterative(cards: list[Card]) -> int:
     return acc
 
 
-def filterOptional[A](iterable: Iterable[Optional[A]]) -> list[A]:
+def filterOptional[A](iterable: Iterable[A | None]) -> list[A]:
     return [value for value in iterable if value is not None]
 
 

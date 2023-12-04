@@ -1,7 +1,12 @@
 target-version = "py312"
 
 [lint]
+ignore = [
+    "ANN101", # self annotation
+    "ANN102", # cls annotation
+]
 extend-select = [
     "UP", #pyupgrade
-    "D",  #pydocstyle
+    "C4", #comprehensions
+    "ANN", #annotations
 ]
