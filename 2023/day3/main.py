@@ -25,7 +25,7 @@ class Image:
         yield from self._grid
 
     def _get_surrounding_numbers(self, idx: int, jdx: int, visited: set[tuple[int, int]]) -> Iterator[int]:
-        """Generates the number surrounding the symbol at Coords (idx, jdx). 
+        """Generates the number surrounding the symbol at Coords (idx, jdx).
         Coords should point to a symbol, not a number or an empty space.
 
         Side effect:
