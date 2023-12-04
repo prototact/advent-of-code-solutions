@@ -3,6 +3,8 @@ import re
 
 COORDS = re.compile(r"<x=(\-*\d+), y=(\-*\d+), z=(\-*\d+)>")
 
+Coords = tuple[int, int, int]
+Pair = tuple[Coords, Coords]
 
 def parse_coords(lines: list[str]) -> list[tuple[int, int, int]]:
     planets: list[tuple[int, int, int]] = []
@@ -27,7 +29,7 @@ def compute_vdiff(left: int, right: int) -> tuple[int, int]:
     return dvleft, dvright
 
 
-def compute_gravity(left: tuple[int, int, int], right: tuple[int, int, int]) -> tuple[tuple[int, int, int], tuple[int, int, int]]:
+def compute_gravity(left: Coords, right: Coords) -> Pair:
     """Computes the change in velocities for each planet-pair."""
     xleft, yleft, zleft = left
     xright, yright, zright = right
