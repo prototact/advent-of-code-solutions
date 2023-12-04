@@ -1,18 +1,11 @@
 import re
 from itertools import combinations, chain
 from math import sqrt, ceil
-from enum import Enum
 
 COORDS = re.compile(r"<x=(\-*\d+), y=(\-*\d+), z=(\-*\d+)>")
 
 Coords = tuple[int, int, int]
 Pair = tuple[Coords, Coords]
-
-
-class Direction(Enum):
-    Xaxis = 0
-    Yaxis = 1
-    Zaxis = 2
 
 
 def parse_coords(lines: list[str]) -> list[Coords]:
@@ -68,9 +61,7 @@ def compute_velocity(planets: list[Coords], velocities: list[Coords]) -> list[Co
     ]
 
 
-def find_contact(
-    left: tuple[int, int, int], right: tuple[int, int, int]
-) -> int | None:
+def find_contact(left: tuple[int, int, int], right: tuple[int, int, int]) -> int | None:
     x0, v0, g0 = left
     x1, v1, g1 = right
     if x0 == x1:
