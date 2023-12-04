@@ -1,10 +1,10 @@
 import re
 
-
 COORDS = re.compile(r"<x=(\-*\d+), y=(\-*\d+), z=(\-*\d+)>")
 
 Coords = tuple[int, int, int]
 Pair = tuple[Coords, Coords]
+
 
 def parse_coords(lines: list[str]) -> list[tuple[int, int, int]]:
     planets: list[tuple[int, int, int]] = []
@@ -41,32 +41,42 @@ def compute_gravity(left: Coords, right: Coords) -> Pair:
     return dvleft, dvright
 
 
-def apply_diff(velocity: tuple[int, int, int], dv: tuple[int, int, int]) -> tuple[int, int, int]:
+def apply_diff(
+    velocity: tuple[int, int, int], dv: tuple[int, int, int]
+) -> tuple[int, int, int]:
     return tuple[int, int, int](veli + dvi for veli, dvi in zip(velocity, dv))
 
 
-def compute_velocity(planets: list[tuple[int, int, int]], velocities: list[tuple[int, int, int]]) -> list[tuple[int, int, int]]:
+def compute_velocity(
+    planets: list[tuple[int, int, int]], velocities: list[tuple[int, int, int]]
+) -> list[tuple[int, int, int]]:
     for idx, planet in enumerate(planets):
-        for jdx, other in enumerate(planets[idx + 1:], start=idx + 1):
+        for jdx, other in enumerate(planets[idx + 1 :], start=idx + 1):
             dv, dv_other = compute_gravity(planet, other)
             vel = apply_diff(velocities[idx], dv)
             vel_other = apply_diff(velocities[jdx], dv_other)
             velocities[idx] = vel
             velocities[jdx] = vel_other
-    
-    return [apply_diff(planet, velocity)  for planet, velocity in zip(planets, velocities)]
+
+    return [
+        apply_diff(planet, velocity) for planet, velocity in zip(planets, velocities)
+    ]
 
 
-def run(planets: list[tuple[int, int, int]], steps: int) -> tuple[list[tuple[int, int, int]], list[tuple[int, int, int]]]:
+def run(
+    planets: list[tuple[int, int, int]], steps: int
+) -> tuple[list[tuple[int, int, int]], list[tuple[int, int, int]]]:
     velocities: list[tuple[int, int, int]] = [(0, 0, 0) for _ in planets]
     for _ in range(steps):
         planets = compute_velocity(planets, velocities)
     return planets, velocities
 
 
-def compute_velocity_fast(planets: list[tuple[int, int, int]], velocities: list[tuple[int, int, int]]) -> list[tuple[int, int, int]]:
+def compute_velocity_fast(
+    planets: list[tuple[int, int, int]], velocities: list[tuple[int, int, int]]
+) -> list[tuple[int, int, int]]:
     return []
-        
+
 
 def run_forever(planets: list[tuple[int, int, int]]) -> int:
     velocities: list[tuple[int, int, int]] = [(0, 0, 0) for _ in planets]
@@ -85,8 +95,12 @@ def norm_one(planet: tuple[int, int, int]) -> int:
     return sum(abs(i) for i in planet)
 
 
-def compute_energy(planets: list[tuple[int, int, int]], velocities: list[tuple[int, int, int]]) -> int:
-    return sum(norm_one(planet) * norm_one(vel) for planet, vel in zip(planets, velocities))
+def compute_energy(
+    planets: list[tuple[int, int, int]], velocities: list[tuple[int, int, int]]
+) -> int:
+    return sum(
+        norm_one(planet) * norm_one(vel) for planet, vel in zip(planets, velocities)
+    )
 
 
 if __name__ == "__main__":
@@ -95,7 +109,7 @@ if __name__ == "__main__":
     planets_after, velocities = run(planets, 100)
     energy = compute_energy(planets_after, velocities)
     assert energy == 1940, energy
-    
+
     with open("sample0.txt") as file:
         planets = parse_coords(file.readlines())
     timesteps = run_forever(planets)
@@ -106,4 +120,3 @@ if __name__ == "__main__":
     planets, velocities = run(planets, 1000)
     energy = compute_energy(planets, velocities)
     print(energy)
-    
