@@ -6,12 +6,12 @@ Coords = tuple[int, int, int]
 Pair = tuple[Coords, Coords]
 
 
-def parse_coords(lines: list[str]) -> list[tuple[int, int, int]]:
-    planets: list[tuple[int, int, int]] = []
+def parse_coords(lines: list[str]) -> list[Coords]:
+    planets: list[Coords] = []
     for line in lines:
         match_ = COORDS.match(line.strip())
         if match_ is not None:
-            planet = tuple[int, int, int](int(gr) for gr in match_.groups())
+            planet = Coords(int(gr) for gr in match_.groups())
             planets.append(planet)
     return planets
 
@@ -41,15 +41,11 @@ def compute_gravity(left: Coords, right: Coords) -> Pair:
     return dvleft, dvright
 
 
-def apply_diff(
-    velocity: tuple[int, int, int], dv: tuple[int, int, int]
-) -> tuple[int, int, int]:
+def apply_diff(velocity: Coords, dv: Coords) -> Coords:
     return tuple[int, int, int](veli + dvi for veli, dvi in zip(velocity, dv))
 
 
-def compute_velocity(
-    planets: list[tuple[int, int, int]], velocities: list[tuple[int, int, int]]
-) -> list[tuple[int, int, int]]:
+def compute_velocity(planets: list[Coords], velocities: list[Coords]) -> list[Coords]:
     for idx, planet in enumerate(planets):
         for jdx, other in enumerate(planets[idx + 1 :], start=idx + 1):
             dv, dv_other = compute_gravity(planet, other)
@@ -63,41 +59,31 @@ def compute_velocity(
     ]
 
 
-def run(
-    planets: list[tuple[int, int, int]], steps: int
-) -> tuple[list[tuple[int, int, int]], list[tuple[int, int, int]]]:
+def run(planets: list[Coords], steps: int) -> tuple[list[Coords], list[Coords]]:
     velocities: list[tuple[int, int, int]] = [(0, 0, 0) for _ in planets]
     for _ in range(steps):
         planets = compute_velocity(planets, velocities)
     return planets, velocities
 
 
-def compute_velocity_fast(
-    planets: list[tuple[int, int, int]], velocities: list[tuple[int, int, int]]
-) -> list[tuple[int, int, int]]:
-    return []
-
-
-def run_forever(planets: list[tuple[int, int, int]]) -> int:
-    velocities: list[tuple[int, int, int]] = [(0, 0, 0) for _ in planets]
+def run_forever(planets: list[Coords]) -> int:
+    velocities: list[Coords] = [(0, 0, 0) for _ in planets]
     copy = velocities[:]
     steps = 0
     init_planets = planets[:]
     while True:
-        planets = compute_velocity_fast(planets, copy)
+        planets = compute_velocity(planets, copy)
         steps += 1
         if planets == init_planets and velocities == copy:
             break
     return steps
 
 
-def norm_one(planet: tuple[int, int, int]) -> int:
+def norm_one(planet: Coords) -> int:
     return sum(abs(i) for i in planet)
 
 
-def compute_energy(
-    planets: list[tuple[int, int, int]], velocities: list[tuple[int, int, int]]
-) -> int:
+def compute_energy(planets: list[Coords], velocities: list[Coords]) -> int:
     return sum(
         norm_one(planet) * norm_one(vel) for planet, vel in zip(planets, velocities)
     )
