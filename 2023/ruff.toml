@@ -2,11 +2,14 @@ target-version = "py312"
 
 [lint]
 ignore = [
-    "ANN101", # self annotation
-    "ANN102", # cls annotation
+    "ANN101", # self-annotation
+    "ANN102", # cls-annotation
 ]
-extend-select = [
-    "UP", #pyupgrade
-    "C4", #comprehensions
-    "ANN", #annotations
+select = [
+    "UP",   # pyupgrade
+    "C4",   # comprehensions
+    "ANN",  # annotations
+    "W",    # warnings
+    "E",    # errors
+    "PERF", # performance? mostly comprehension related
 ]
