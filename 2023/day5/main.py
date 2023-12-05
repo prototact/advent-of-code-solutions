@@ -57,10 +57,10 @@ class Map:
                 lower = range(left.start, right.start)
                 return Subdivision(overlap=right, non_overlap=[lower])
             if left.start == right.start and right.stop < left.stop:
-                upper = range(right.stop + 1, left.stop)
+                upper = range(right.stop, left.stop)
                 return Subdivision(overlap=right, non_overlap=[upper])
             lower = range(left.start, right.start)
-            upper = range(right.stop + 1, left.stop)
+            upper = range(right.stop, left.stop)
             return Subdivision(overlap=right, non_overlap=[lower, upper])
         # left is contained in right
         if right.start <= left.start and left.stop <= right.stop:
