@@ -14,15 +14,14 @@ ORDER = {
 }
 
 
-@dataclass
-class Subdivision:
-    overlap: range | None
-    non_overlap: list[range]
-
-
 @dataclass(frozen=True)
 class Map:
     ranges: list[tuple[range, range]]
+
+    @dataclass
+    class _Subdivision:
+        overlap: range | None
+        non_overlap: list[range]
 
     @classmethod
     def parse_map(cls, values: list[tuple[int, int, int]]) -> "Map":
@@ -44,7 +43,7 @@ class Map:
         return dst
 
     @staticmethod
-    def subdivide(left: range, right: range) -> Subdivision:
+    def _subdivide(left: range, right: range) -> _Subdivision:
         """Subdivides the left range into overlap with right and non-overlaps.
         It is not symmetric in left and right.
         Instead, only members of left are of interest.
@@ -52,46 +51,46 @@ class Map:
         # right is contained in left
         if left.start <= right.start and right.stop <= left.stop:
             if left.start == right.start and right.stop == left.stop:
-                return Subdivision(overlap=right, non_overlap=[])
+                return Map._Subdivision(overlap=right, non_overlap=[])
             if left.start < right.start and right.stop == left.stop:
                 lower = range(left.start, right.start)
-                return Subdivision(overlap=right, non_overlap=[lower])
+                return Map._Subdivision(overlap=right, non_overlap=[lower])
             if left.start == right.start and right.stop < left.stop:
                 upper = range(right.stop, left.stop)
-                return Subdivision(overlap=right, non_overlap=[upper])
+                return Map._Subdivision(overlap=right, non_overlap=[upper])
             lower = range(left.start, right.start)
             upper = range(right.stop, left.stop)
-            return Subdivision(overlap=right, non_overlap=[lower, upper])
+            return Map._Subdivision(overlap=right, non_overlap=[lower, upper])
         # left is contained in right
         if right.start <= left.start and left.stop <= right.stop:
-            return Subdivision(overlap=left, non_overlap=[])
+            return Map._Subdivision(overlap=left, non_overlap=[])
         # left is hanging from below
         if left.start <= right.start <= left.stop <= right.stop:
             if left.start == right.start:
-                return Subdivision(overlap=left, non_overlap=[])
+                return Map._Subdivision(overlap=left, non_overlap=[])
             if right.start == left.stop:
-                return Subdivision(overlap=None, non_overlap=[left])
+                return Map._Subdivision(overlap=None, non_overlap=[left])
             inbetween = range(right.start, left.stop)
             lower = range(left.start, right.start)
-            return Subdivision(overlap=inbetween, non_overlap=[lower])
+            return Map._Subdivision(overlap=inbetween, non_overlap=[lower])
         # left is hanging from above
         if right.start <= left.start <= right.stop <= left.stop:
             if right.stop == left.stop:
-                return Subdivision(overlap=left, non_overlap=[])
+                return Map._Subdivision(overlap=left, non_overlap=[])
             if left.start == right.stop:
-                return Subdivision(overlap=None, non_overlap=[left])
+                return Map._Subdivision(overlap=None, non_overlap=[left])
             inbetween = range(left.start, right.stop)
             upper = range(right.stop, left.stop)
-            return Subdivision(overlap=inbetween, non_overlap=[upper])
+            return Map._Subdivision(overlap=inbetween, non_overlap=[upper])
         # left and right do not overlap
         # if right.stop < left.start or left.stop < right.start:
-        return Subdivision(overlap=None, non_overlap=[left])
+        return Map._Subdivision(overlap=None, non_overlap=[left])
 
     def map_range(self, rng: range) -> list[range]:
         to_map = [rng]
         mapped: list[range] = []
         for src_range, dst_range in self.ranges:
-            subdivs = [self.subdivide(rng, src_range) for rng in to_map]
+            subdivs = [self._subdivide(rng, src_range) for rng in to_map]
             for subdiv in subdivs:
                 if subdiv.overlap is not None:
                     start = dst_range.start + (subdiv.overlap.start - src_range.start)
