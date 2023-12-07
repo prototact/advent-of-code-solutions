@@ -69,15 +69,13 @@ class Hand[A: IntEnum](ABC):
 
     @property
     @abstractmethod
-    def eval_hand(self) -> Hands:
+    def _eval_hand(self) -> Hands:
         ...
 
     @property
     @final
-    def by_hand(self) -> tuple[int, int, int, int, int, int]:
-        return tuple[int, int, int, int, int, int](
-            [int(self.eval_hand), *map(int, self)]
-        )
+    def by_hand(self) -> list[int]:
+        return [int(self._eval_hand), *map(int, self)]
 
 
 @dataclass
@@ -87,7 +85,7 @@ class NormalHand(Hand[Card]):
         return cls([CARDMAP[card] for card in hand])
 
     @property
-    def eval_hand(self) -> Hands:
+    def _eval_hand(self) -> Hands:
         count = Counter(self)
         match count.most_common(2):
             case [(_, 1), _]:
@@ -115,7 +113,7 @@ class JokeHand(Hand[JokeCard]):
         return cls([JOKECARDMAP[card] for card in hand])
 
     @property
-    def eval_hand(self) -> Hands:
+    def _eval_hand(self) -> Hands:
         count = Counter(self)
         jokers = count.get(JokeCard.Jack, 0)
         del count[JokeCard.Jack]
