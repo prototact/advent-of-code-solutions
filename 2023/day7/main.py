@@ -72,6 +72,7 @@ class Hand[A: IntEnum](ABC):
     def eval_hand(self) -> Hands:
         ...
 
+    @property
     @final
     def by_hand(self) -> tuple[int, int, int, int, int, int]:
         return tuple[int, int, int, int, int, int](
@@ -162,7 +163,7 @@ class JokeHand(Hand[JokeCard]):
 
 
 def rank_hands[A: IntEnum](hands: list[tuple[Hand[A], int]]) -> int:
-    sorted_hands = sorted(hands, key=lambda x: x[0].by_hand())
+    sorted_hands = sorted(hands, key=lambda x: x[0].by_hand)
     return sum(rank * dip for rank, (_, dip) in enumerate(sorted_hands, start=1))
 
 
