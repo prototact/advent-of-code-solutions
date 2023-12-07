@@ -174,7 +174,7 @@ def parse_hands_and_dips[A: IntEnum](
     ]
 
 
-if __name__ == "__main__":
+def main() -> None:
     with open("sample.txt") as file:
         hands = parse_hands_and_dips(file.readlines(), NormalHand)
     total_returns = rank_hands(hands)
@@ -194,3 +194,7 @@ if __name__ == "__main__":
         hands = parse_hands_and_dips(file.readlines(), JokeHand)
     total_returns = rank_hands(hands)
     print(total_returns)
+
+
+if __name__ == "__main__":
+    main()
