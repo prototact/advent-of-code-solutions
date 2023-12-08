@@ -1,7 +1,10 @@
 import re
+from collections.abc import Iterable
 from dataclasses import dataclass
 from enum import Enum
+from functools import reduce
 from itertools import cycle
+from math import gcd
 
 NODE = re.compile(r"(\w+) = \((\w+), (\w+)\)")
 
@@ -55,6 +58,24 @@ class Adjacency:
             steps += 1
         return steps
 
+    def find_paths(self, instructions: list[Move]) -> dict[tuple[str, str], int]:
+        currents = [
+            value
+            for name, value in self._vectors.items()
+            if name.endswith(self._start[-1])
+        ]
+        finals: dict[tuple[str, str], int] = {}
+        for current in currents:
+            steps = 0
+            the_current = current
+            for dir_ in cycle(instructions):
+                if the_current.name.endswith(self._end[-1]):
+                    finals[(current.name, the_current.name)] = steps
+                    break
+                the_current = self._move(the_current, dir_)
+                steps += 1
+        return finals
+
 
 def parse_instructions(lines: list[str]) -> tuple[list[Move], Adjacency]:
     itr = iter(lines)
@@ -68,6 +89,17 @@ def parse_instructions(lines: list[str]) -> tuple[list[Move], Adjacency]:
             vec[node.name] = node
     adjacency = Adjacency("AAA", "ZZZ", vec)
     return moves, adjacency
+
+
+def find_lcm(x: int, y: int) -> int:
+    d = gcd(x, y)
+    p = x // d
+    q = y // d
+    return p * q * d
+
+
+def find_total_lcm(xs: Iterable[int]) -> int:
+    return reduce(find_lcm, xs)
 
 
 if __name__ == "__main__":
@@ -86,5 +118,6 @@ if __name__ == "__main__":
     steps = adjacency.follow_instructions(moves)
     print(steps)
 
-    steps = adjacency.follow_ghost_instructions(moves)
-    print(steps)
+    finals = adjacency.find_paths(moves)
+    total = find_total_lcm(finals.values())
+    print(total)
