@@ -76,6 +76,35 @@ class Adjacency:
                 steps += 1
         return finals
 
+    def find_paths_and_after(self, instructions: list[Move]) -> tuple[dict[tuple[str, str], int], dict[tuple[str, str], int]]:
+        currents = [
+            value
+            for name, value in self._vectors.items()
+            if name.endswith(self._start[-1])
+        ]
+        finals: dict[tuple[str, str], int] = {}
+        after_finals: dict[tuple[str, str], int] = {}
+        for current in currents:
+            steps = 0
+            the_current = current
+            itr = cycle(instructions)
+            while True:
+                dir_ = next(itr)
+                if the_current.name.endswith(self._end[-1]):
+                    finals[(current.name, the_current.name)] = steps
+                    new_steps = 0
+                    new_current = the_current
+                    for new_dir in itr:
+                        new_steps += 1
+                        new_current = self._move(new_current, new_dir)
+                        if new_current.name.endswith(self._end[-1]):
+                            after_finals[(the_current.name, new_current.name)] = new_steps
+                            break
+                    break
+                the_current = self._move(the_current, dir_)
+                steps += 1
+        return finals, after_finals
+
 
 def parse_instructions(lines: list[str]) -> tuple[list[Move], Adjacency]:
     itr = iter(lines)
@@ -121,3 +150,9 @@ if __name__ == "__main__":
     finals = adjacency.find_paths(moves)
     total = find_total_lcm(finals.values())
     print(total)
+    finals, after_finals = adjacency.find_paths_and_after(moves)
+    for key, value in finals.items():
+        print(key, value)
+    print('-----')
+    for (prev, (key, value)) in zip(finals.values(), after_finals.items()):
+        print(key, value, prev - value)
