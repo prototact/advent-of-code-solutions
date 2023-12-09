@@ -1,3 +1,4 @@
+from functools import reduce
 from itertools import islice
 
 
@@ -28,11 +29,7 @@ def predict_backwards(history: list[int]) -> int:
         ]
         starts.append(current[0])
 
-    prev = 0
-    while starts:
-        start = starts.pop()
-        prev = -prev + start
-    return prev
+    return reduce(lambda acc, x: x - acc, reversed(starts), 0)
 
 
 def predict_all(histories: list[list[int]]) -> list[int]:
