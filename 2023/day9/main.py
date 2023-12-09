@@ -1,29 +1,38 @@
-def predict(history: list[int]) -> int:
-    current = history[:]
-    tower: list[list[int]] = [current]
-    while any(number != 0 for number in current):
-        current = [next_ - elem for elem, next_ in zip(current[:-1], current[1:])]
-        tower.append(current[:])
+from itertools import islice
 
-    last = 0
-    while tower:
-        layer = tower.pop()
-        last = last + layer[-1]
+
+def predict(history: list[int]) -> int:
+    current = history
+    last = current[-1]
+    while any(number != 0 for number in current):
+        current = [
+            next_ - elem
+            for elem, next_ in zip(
+                islice(current, len(current) - 1), islice(current, 1, None)
+            )
+        ]
+        last += current[-1]
+
     return last
 
 
 def predict_backwards(history: list[int]) -> int:
     current = history[:]
-    tower: list[list[int]] = [current]
+    starts: list[int] = [current[0]]
     while any(number != 0 for number in current):
-        current = [next_ - elem for elem, next_ in zip(current[:-1], current[1:])]
-        tower.append(current[:])
+        current = [
+            next_ - elem
+            for elem, next_ in zip(
+                islice(current, len(current) - 1), islice(current, 1, None)
+            )
+        ]
+        starts.append(current[0])
 
-    last = 0
-    while tower:
-        layer = tower.pop()
-        last = -last + layer[0]
-    return last
+    prev = 0
+    while starts:
+        start = starts.pop()
+        prev = -prev + start
+    return prev
 
 
 def predict_all(histories: list[list[int]]) -> list[int]:
