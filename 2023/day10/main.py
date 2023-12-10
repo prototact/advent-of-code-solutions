@@ -198,24 +198,27 @@ class TileGrid:
             # somehow account for parallel pipes
             for x, tile in enumerate(row):
                 if (x, y) in loop:
-                    if tile.pipe == Pipe.SouthToEast:
-                        parallel = tile.pipe
-                    elif tile.pipe == Pipe.NorthToEast:
-                        parallel = tile.pipe
-                    elif tile.pipe == Pipe.WestToEast:
-                        continue
-                    elif tile.pipe == Pipe.SouthToWest and parallel == Pipe.NorthToEast:
-                        count = not count
-                        parallel = None
-                    elif tile.pipe == Pipe.NorthToWest and parallel == Pipe.SouthToEast:
-                        count = not count
-                        parallel = None
-                    elif tile.pipe == Pipe.SouthToWest and parallel == Pipe.SouthToEast:
-                        parallel = None
-                    elif tile.pipe == Pipe.NorthToWest and parallel == Pipe.NorthToEast:
-                        parallel = None
-                    else:
-                        count = not count
+                    match (tile.pipe, parallel):
+                        case (Pipe.SouthToEast, None):
+                            parallel = tile.pipe
+                        case (Pipe.NorthToEast, None):
+                            parallel = tile.pipe
+                        case (Pipe.WestToEast, parallel) if parallel is not None:
+                            continue
+                        case (Pipe.SouthToWest, Pipe.NorthToEast):
+                            count = not count
+                            parallel = None
+                        case (Pipe.NorthToWest, Pipe.SouthToEast):
+                            count = not count
+                            parallel = None
+                        case (Pipe.SouthToWest, Pipe.SouthToEast):
+                            parallel = None
+                        case (Pipe.NorthToWest, Pipe.NorthToEast):
+                            parallel = None
+                        case (Pipe.NorthToSouth, None):
+                            count = not count
+                        case _:
+                            raise ValueError(f"Invalid loop {tile.pipe, parallel}")
                 elif count:
                     area += 1
         return area
