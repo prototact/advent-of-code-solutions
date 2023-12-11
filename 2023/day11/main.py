@@ -8,12 +8,18 @@ Pair = tuple[Coord, Coord]
 @dataclass
 class Galaxies:
     _grid: list[list[bool]]
+    _empty_rows: set[int]
+    _empty_cols: set[int]
     _expansion_offset: int
 
     @classmethod
     def parse(cls, lines: list[str], offset: int) -> "Galaxies":
         grid = [[elem == "#" for elem in line.strip()] for line in lines]
-        return cls(grid, offset)
+        empty_rows = {idx for idx, row in enumerate(grid) if not any(row)}
+        empty_cols = {
+            idx for idx, _ in enumerate(grid[0]) if not any(row[idx] for row in grid)
+        }
+        return cls(grid, empty_rows, empty_cols, offset)
 
     def _find_galaxies(self) -> list[Coord]:
         return [
@@ -28,16 +34,15 @@ class Galaxies:
         if left_row > right_row:
             right_row, left_row = left_row, right_row
         empty_rows = sum(
-            1 for row in self._grid[left_row + 1 : right_row] if not any(row)
+            1 for row in range(left_row + 1, right_row) if row in self._empty_rows
         )
 
         if left_col > right_col:
             right_col, left_col = left_col, right_col
 
-        empty_cols = 0
-        for idx in range(left_col + 1, right_col):
-            if not any(row[idx] for row in self._grid):
-                empty_cols += 1
+        empty_cols = sum(
+            1 for col in range(left_col + 1, right_col) if col in self._empty_cols
+        )
         return empty_rows, empty_cols
 
     def _compute_distance(self, pair: Pair) -> int:
