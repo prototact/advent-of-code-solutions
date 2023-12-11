@@ -10,16 +10,15 @@ class Galaxies:
     _grid: list[list[bool]]
     _empty_rows: set[int]
     _empty_cols: set[int]
-    _expansion_offset: int
 
     @classmethod
-    def parse(cls, lines: list[str], offset: int) -> "Galaxies":
+    def parse(cls, lines: list[str]) -> "Galaxies":
         grid = [[elem == "#" for elem in line.strip()] for line in lines]
         empty_rows = {idx for idx, row in enumerate(grid) if not any(row)}
         empty_cols = {
             idx for idx, _ in enumerate(grid[0]) if not any(row[idx] for row in grid)
         }
-        return cls(grid, empty_rows, empty_cols, offset)
+        return cls(grid, empty_rows, empty_cols)
 
     def _find_galaxies(self) -> list[Coord]:
         return [
@@ -45,40 +44,36 @@ class Galaxies:
         )
         return empty_rows, empty_cols
 
-    def _compute_distance(self, pair: Pair) -> int:
+    def _compute_distance(self, pair: Pair, offset: int) -> int:
         left, right = pair
         empty_rows, empty_cols = self._count_empty_between(pair)
-        dx = abs(right[0] - left[0]) + empty_rows * (self._expansion_offset - 1)
-        dy = abs(right[1] - left[1]) + empty_cols * (self._expansion_offset - 1)
+        dx = abs(right[0] - left[0]) + empty_rows * (offset - 1)
+        dy = abs(right[1] - left[1]) + empty_cols * (offset - 1)
         return dx + dy
 
-    def compute_shortest_distance_between_all_pairs(self) -> int:
+    def compute_shortest_distance_between_all_pairs(self, offset: int) -> int:
         galaxies = self._find_galaxies()
-        return sum(self._compute_distance(pair) for pair in combinations(galaxies, r=2))
+        return sum(
+            self._compute_distance(pair, offset) for pair in combinations(galaxies, r=2)
+        )
 
 
 if __name__ == "__main__":
     with open("sample.txt") as file:
-        galaxies = Galaxies.parse(file.readlines(), 2)
-    distance = galaxies.compute_shortest_distance_between_all_pairs()
+        galaxies = Galaxies.parse(file.readlines())
+    distance = galaxies.compute_shortest_distance_between_all_pairs(2)
     assert distance == 374, distance
 
-    with open("sample.txt") as file:
-        galaxies = Galaxies.parse(file.readlines(), 10)
-    distance = galaxies.compute_shortest_distance_between_all_pairs()
+    distance = galaxies.compute_shortest_distance_between_all_pairs(10)
     assert distance == 1030, distance
 
-    with open("sample.txt") as file:
-        galaxies = Galaxies.parse(file.readlines(), 100)
-    distance = galaxies.compute_shortest_distance_between_all_pairs()
+    distance = galaxies.compute_shortest_distance_between_all_pairs(100)
     assert distance == 8410, distance
 
     with open("input.txt") as file:
-        galaxies = Galaxies.parse(file.readlines(), 2)
-    distance = galaxies.compute_shortest_distance_between_all_pairs()
+        galaxies = Galaxies.parse(file.readlines())
+    distance = galaxies.compute_shortest_distance_between_all_pairs(2)
     print(distance)
 
-    with open("input.txt") as file:
-        galaxies = Galaxies.parse(file.readlines(), 1_000_000)
-    distance = galaxies.compute_shortest_distance_between_all_pairs()
+    distance = galaxies.compute_shortest_distance_between_all_pairs(1_000_000)
     print(distance)
