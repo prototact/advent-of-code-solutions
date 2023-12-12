@@ -1,5 +1,7 @@
 from dataclasses import dataclass
 from enum import Enum
+from itertools import repeat, chain
+from functools import reduce
 
 
 class Spring(Enum):
@@ -79,6 +81,68 @@ class SpringRow:
 
         return go(springs, broken, False, False)
 
+    @staticmethod
+    def split_on_okay(springs: list[Spring]) -> list[list[Spring]]:
+        splitted: list[list[Spring]] = []
+        to_split: list[Spring] = []
+        for spring in springs:
+            if spring != Spring.Okay:
+                to_split.append(spring)
+            elif spring == Spring.Okay and to_split:
+                splitted.append(to_split)
+                to_split = []
+        if to_split:
+            splitted.append(to_split)
+        return splitted
+
+    def count_orderings_unfold(self) -> int:
+        broken = list(chain.from_iterable(repeat(self._broken[:], 5)))
+        rev5 = repeat(self._springs[:], 5)
+        springs = reduce(
+            lambda agg, x: agg + [Spring.Wildcard] + x,
+            rev5,
+        )
+        groups = self.split_on_okay(springs)
+        def go(broken: list[int], groups: list[list[Spring]]) -> int:
+            if not broken:
+                return (
+                    1
+                    if all(
+                        all(spring != Spring.Broken for spring in group)
+                        for group in groups
+                    )
+                    else 0
+                )
+            if not groups:
+                return 0
+
+            size, *rest = broken
+            group, *rest_groups = groups
+            if len(group) < size and all(spring == Spring.Wildcard for spring in group):
+                return go(broken, rest_groups)
+            if len(group) < size:
+                return 0
+            if len(group) == size and all(
+                spring == Spring.Wildcard for spring in group
+            ):
+                return go(rest, rest_groups) + go(broken, rest_groups)
+            if len(group) == size:
+                return go(rest, rest_groups)
+            if len(group) > size and all(spring == Spring.Broken for spring in group):
+                return 0
+            if len(group) > size:
+                return (
+                    sum(
+                        go(rest, [group[idx + size + 1:], *rest_groups])
+                        for idx in range(len(group) - size) if group[idx + size] == Spring.Wildcard and all(spring != Spring.Broken for spring in group[:idx])
+                    )
+                    + (go(rest, rest_groups) if all(spring != Spring.Broken for spring in group[:len(group) - size]) else 0)
+                    + (go(broken, rest_groups) if all(spring == Spring.Wildcard for spring in group) else 0)
+                )
+            raise ValueError(f"Unreachable {broken, groups}")
+
+        return go(broken, groups)
+
 
 if __name__ == "__main__":
     with open("sample.txt") as file:
@@ -86,7 +150,13 @@ if __name__ == "__main__":
     total = sum(springrow.count_orderings() for springrow in springrows)
     assert total == 21, total
 
+    total = sum(springrow.count_orderings_unfold() for springrow in springrows)
+    assert total == 525152, total
+
     with open("input.txt") as file:
         springrows = [SpringRow.parse_row(line) for line in file.readlines()]
     total = sum(springrow.count_orderings() for springrow in springrows)
+    print(total)
+
+    total = sum(springrow.count_orderings_unfold() for springrow in springrows)
     print(total)
