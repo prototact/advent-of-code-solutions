@@ -103,6 +103,7 @@ class SpringRow:
             rev5,
         )
         groups = self.split_on_okay(springs)
+
         def go(broken: list[int], groups: list[list[Spring]]) -> int:
             if not broken:
                 return (
@@ -133,11 +134,24 @@ class SpringRow:
             if len(group) > size:
                 return (
                     sum(
-                        go(rest, [group[idx + size + 1:], *rest_groups])
-                        for idx in range(len(group) - size) if group[idx + size] == Spring.Wildcard and all(spring != Spring.Broken for spring in group[:idx])
+                        go(rest, [group[idx + size + 1 :], *rest_groups])
+                        for idx in range(len(group) - size)
+                        if group[idx + size] == Spring.Wildcard
+                        and all(spring != Spring.Broken for spring in group[:idx])
                     )
-                    + (go(rest, rest_groups) if all(spring != Spring.Broken for spring in group[:len(group) - size]) else 0)
-                    + (go(broken, rest_groups) if all(spring == Spring.Wildcard for spring in group) else 0)
+                    + (
+                        go(rest, rest_groups)
+                        if all(
+                            spring != Spring.Broken
+                            for spring in group[: len(group) - size]
+                        )
+                        else 0
+                    )
+                    + (
+                        go(broken, rest_groups)
+                        if all(spring == Spring.Wildcard for spring in group)
+                        else 0
+                    )
                 )
             raise ValueError(f"Unreachable {broken, groups}")
 
