@@ -97,23 +97,36 @@ def find_loops(grid: list[list[bool]], init_guard_pos: tuple[int, int]) -> int:
         return False
 
     def is_loop_trick(trajectory: deque[tuple[int, int]]) -> bool:
-        return any(pos == other_pos for pos, other_pos in zip(islice(trajectory, 2, None, 2), islice(trajectory, None, None)))
+        seen: list[tuple[int, int]] = []
+        idx = 0
+        temp: list[tuple[int, int]] = []
+        for pos in trajectory:
+            if seen and idx == len(seen):
+                return True
+            if seen and seen[idx] == pos:
+                idx += 1
+                temp.append(pos)
+            elif seen and seen[idx] != pos:
+                idx = 0
+                seen.extend(temp)
+                temp = []
+                seen.append(pos)
+            else:
+                seen.append(pos)
+        return False
 
-    def find_loop(guard_pos: tuple[int, int], dir_: Direction, block: tuple[int, int]) -> bool:
+    def find_loop(guard_pos: tuple[int, int], dir_: Direction, block: tuple[int, int], estimated_size: int) -> bool:
         trajectory = deque([guard_pos])
-        visited = {guard_pos}
+        total_steps = 0
         while True:
             guard_pos, dir_, step = move_guard(guard_pos, dir_, block) 
             if guard_pos is None:
                 return False
+            total_steps += step
             if step:
                 trajectory.appendleft(guard_pos)
-                visited.add(guard_pos)
-                if guard_pos in visited:
-                    if is_loop_trick(trajectory):
-                        return True
-                    else:
-                        visited = {guard_pos}
+                if not (total_steps % estimated_size) and is_loop_trick(trajectory):
+                    return True
 
     init_dir = Direction.Up
     dir_ = init_dir
@@ -123,7 +136,7 @@ def find_loops(grid: list[list[bool]], init_guard_pos: tuple[int, int]) -> int:
         guard_pos, dir_, _ = move_guard(guard_pos, dir_)
         if guard_pos is not None and guard_pos != init_guard_pos:
             visited.add(guard_pos)
-    return sum(find_loop(init_guard_pos, init_dir, block) for block in visited)
+    return sum(find_loop(init_guard_pos, init_dir, block, len(visited)) for block in visited)
 
 
 def read_map(filename: str) -> tuple[list[list[bool]], tuple[int, int]]:
